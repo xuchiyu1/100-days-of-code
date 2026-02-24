@@ -1,135 +1,127 @@
-# LeetCode 205 – Isomorphic Strings
+# LeetCode 205 – Isomorphic Strings (Index Pattern Version)
 
 ## 🧩 Problem
 
 Given two strings `s` and `t`, determine if they are isomorphic.
 
-Two strings are isomorphic if characters in `s` can be replaced to get `t`.
-
-Each character must map to another character uniquely.
-
----
-
-## 🎯 Core Idea
-
-We must ensure:
-
-1. Character → Character mapping is consistent.
-2. No two characters map to the same character.
-
-This is called a **bijective mapping** (one-to-one mapping).
+Two strings are isomorphic if characters in `s` can be replaced to get `t`
+while preserving order and maintaining a one-to-one mapping.
 
 ---
 
-## 🧠 Step-by-Step Thinking
+## 🎯 Core Idea (Index Pattern Approach)
+
+Instead of using two hash maps, this solution compares the **index pattern** of both strings.
+
+The idea:
+
+If two strings are isomorphic,  
+their "first occurrence index pattern" must be identical.
+
+---
+
+## 🧠 How It Works
 
 Example:
 
-s = "egg"  
-t = "add"
+s = "paper"
+t = "title"
 
-Mapping:
+For string "paper":
 
-e → a  
-g → d  
+p → first appears at index 0  
+a → first appears at index 1  
+p → first appears at index 0  
+e → first appears at index 3  
+r → first appears at index 4  
 
-Works ✔
+Pattern becomes:
 
-But:
+[0, 1, 0, 3, 4]
 
-s = "foo"  
-t = "bar"
+For string "title":
 
-f → b  
-o → a  
-o → r ❌ (conflict)
+t → first appears at index 0  
+i → first appears at index 1  
+t → first appears at index 0  
+l → first appears at index 3  
+e → first appears at index 4  
 
----
+Pattern becomes:
 
-## 🔥 Solution Approach
+[0, 1, 0, 3, 4]
 
-We use TWO dictionaries:
-
-- s_to_t
-- t_to_s
-
-Why two?
-
-To guarantee two-way uniqueness.
+Since both patterns are identical → True.
 
 ---
 
-## ✅ Code
+## ✅ Code (Your Version)
 
 ```python
 class Solution:
     def isIsomorphic(self, s: str, t: str) -> bool:
-        if len(s) != len(t):
-            return False
+        map1 = []
+        map2 = []
 
-        s_to_t = {}
-        t_to_s = {}
+        for idx in s:
+            map1.append(s.index(idx))
 
-        for c1, c2 in zip(s, t):
+        for idx in t:
+            map2.append(t.index(idx))
 
-            if c1 in s_to_t:
-                if s_to_t[c1] != c2:
-                    return False
-            else:
-                s_to_t[c1] = c2
-
-            if c2 in t_to_s:
-                if t_to_s[c2] != c1:
-                    return False
-            else:
-                t_to_s[c2] = c1
-
-        return True
+        if map1 == map2:
+            return True
+        return False
 ```
 
 ---
 
 ## 🔍 Key Python Syntax Explained
 
-zip(s, t)  
-→ pairs characters together
+### `.index(x)`
 
-dict[key] = value  
-→ creates mapping
+Returns the index of the **first occurrence** of `x`.
 
-if key in dict  
-→ checks existence
+Example:
+
+```python
+"paper".index("p") → 0
+```
+
+Even the second "p" still returns 0.
 
 ---
 
-## 🧠 Algorithm Pattern
+## 🧠 Why This Works
 
-This uses:
+This solution compares structural patterns.
 
-Double Hash Map Pattern  
-Used when enforcing one-to-one mapping.
+If two strings have the same index pattern,
+they follow the same character structure.
 
 ---
 
 ## ⏱ Complexity
 
-Time: O(n)  
-Space: O(n)
+Time Complexity: O(n²)  
+(Each `.index()` scans the string again.)
+
+Space Complexity: O(n)
 
 ---
 
-## 📌 Common Mistakes
+## ⚠️ Limitation
 
-❌ Using only one dictionary  
-❌ Forgetting reverse check  
-❌ Not checking length first  
+This solution is less efficient than the double-hash-map approach.
+
+However, it is very intuitive and good for understanding structural matching.
 
 ---
 
 ## 💡 Reflection
 
-This problem trains:
+This approach teaches:
 
-- Hash map mapping logic
-- One-to-one relationship enforcement
-- Pattern recognition skills
+- Pattern transformation
+- First occurrence tracking
+- Structural equivalence checking
