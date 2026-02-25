@@ -1,18 +1,21 @@
-# Algorithm Pattern Overview
+# Algorithm Templates Collection
 
-This document summarizes core algorithm patterns learned so far.
+This document summarizes core algorithm templates learned so far.
+
+The goal is not to memorize problems, but to recognize reusable patterns.
 
 ---
 
 # 1️⃣ Stable Two-Pointer (Compression Pattern)
 
-## Used For:
-- Remove Duplicates (26)
-- Remove Element (27)
-- Move Zeroes (283)
-- Partition by condition (even, negative, etc.)
+## When to Use
+- Remove elements
+- Remove duplicates
+- Move zeroes
+- Partition by condition
+- In-place modification with order preserved
 
-## Template:
+## Template
 
 ```python
 slow = 0
@@ -21,107 +24,162 @@ for fast in range(len(nums)):
     if CONDITION(nums[fast]):
         nums[slow] = nums[fast]
         slow += 1
+
+# Optional cleanup step
+for i in range(slow, len(nums)):
+    nums[i] = FILL_VALUE
 ```
 
-## Key Idea:
+## Key Idea
 - `slow` marks the boundary of valid elements.
-- `fast` scans the array.
-- Maintains relative order.
+- `fast` scans through the array.
+- Preserves relative order (stable partition).
 
 Time Complexity: O(n)  
 Space Complexity: O(1)
 
 ---
 
-# 2️⃣ Two-Pointer Opposite Ends
+# 2️⃣ Two-Pointer (Opposite Ends)
 
-## Used For:
-- 3Sum (15)
-- Two Sum II (sorted)
-- Pair problems in sorted arrays
+## When to Use
+- Sorted arrays
+- Two Sum II
+- 3Sum
+- Pair-based problems
 
-## Template:
+## Template
 
 ```python
+nums.sort()
 left = 0
 right = len(nums) - 1
 
 while left < right:
-    if condition:
+    total = nums[left] + nums[right]
+
+    if total == target:
+        # process result
+        left += 1
+        right -= 1
+    elif total < target:
         left += 1
     else:
         right -= 1
 ```
 
-## Key Idea:
+## Key Idea
 - Requires sorted array.
-- Moves inward from both ends.
-- Used for sum-based problems.
+- Moves inward based on comparison.
+- Efficient for sum problems.
 
-Time Complexity: O(n) per iteration layer.
+Time Complexity: O(n) per layer
 
 ---
 
 # 3️⃣ Sliding Window (Fixed Size)
 
-## Used For:
-- Longest Substring Without Repeating Characters (3)
-- Find All Anagrams (438)
+## When to Use
+- Substring matching
+- Anagram detection
+- Fixed-length window problems
 
-## Template:
+## Template
 
 ```python
-initialize window
+# initialize window
+for i in range(k):
+    update_window()
 
-for right in range(len(s)):
-    update window
+# check initial window
+check_condition()
 
-    while condition violated:
-        shrink window
-
-    update answer
+# slide window
+for i in range(k, len(arr)):
+    remove_left()
+    add_right()
+    check_condition()
 ```
 
-## Key Idea:
-- Maintain window state.
+## Key Idea
+- Window size is constant.
 - Update incrementally instead of recomputing.
+- Often used with frequency arrays.
 
 Time Complexity: O(n)
 
 ---
 
-# 4️⃣ Hash Map Mapping Pattern
+# 4️⃣ Sliding Window (Variable Size)
 
-## Used For:
-- Isomorphic Strings (205)
-- Word Pattern (290)
+## When to Use
+- Longest substring problems
+- Minimum window substring
+- Dynamic interval problems
 
-## Template:
+## Template
+
+```python
+left = 0
+
+for right in range(len(s)):
+    expand_window()
+
+    while condition_invalid:
+        shrink_window()
+        left += 1
+
+    update_answer()
+```
+
+## Key Idea
+- Window grows and shrinks dynamically.
+- Maintains a valid condition.
+
+Time Complexity: O(n)
+
+---
+
+# 5️⃣ Double Hash Map (Bijection Pattern)
+
+## When to Use
+- Isomorphic strings
+- Word pattern
+- One-to-one mapping problems
+
+## Template
 
 ```python
 map1 = {}
 map2 = {}
 
 for a, b in zip(s, t):
-    if conflict:
+    if a in map1 and map1[a] != b:
         return False
+    if b in map2 and map2[b] != a:
+        return False
+
+    map1[a] = b
+    map2[b] = a
 ```
 
-## Key Idea:
-- Enforce one-to-one mapping.
-- Double hash map ensures bijection.
+## Key Idea
+- Enforces bidirectional uniqueness.
+- Prevents many-to-one mappings.
 
 Time Complexity: O(n)
 
 ---
 
-# 5️⃣ Frequency Counting Pattern
+# 6️⃣ Frequency Counting Pattern
 
-## Used For:
-- Majority Element (169)
-- Top K Frequent (347)
+## When to Use
+- Majority element
+- Top K frequent
+- Character counting
+- Duplicate detection
 
-## Template:
+## Template
 
 ```python
 count = {}
@@ -130,51 +188,150 @@ for x in nums:
     count[x] = count.get(x, 0) + 1
 ```
 
+## Key Idea
+- Use dictionary for counting.
+- Efficient O(n) frequency tracking.
+
 ---
 
-# 6️⃣ Bucket Sort Pattern
+# 7️⃣ Bucket Sort Pattern
 
-## Used For:
-- Top K Frequent Elements (347)
+## When to Use
+- Top K frequent elements
+- Frequency-based grouping
 
-## Template:
+## Template
 
 ```python
-buckets = [[] for _ in range(n+1)]
+buckets = [[] for _ in range(n + 1)]
 
 for num, freq in count.items():
     buckets[freq].append(num)
+
+res = []
+for i in range(n, 0, -1):
+    for num in buckets[i]:
+        res.append(num)
+```
+
+## Key Idea
+- Frequency acts as index.
+- Avoids full sorting.
+- Space-for-time optimization.
+
+Time Complexity: O(n)
+
+---
+
+# 8️⃣ Greedy Pattern
+
+## When to Use
+- Best Time to Buy and Sell Stock
+- Interval scheduling
+- Local optimal → global optimal problems
+
+## Template
+
+```python
+min_value = float('inf')
+best = 0
+
+for x in nums:
+    min_value = min(min_value, x)
+    best = max(best, x - min_value)
+```
+
+## Key Idea
+- Maintain best local state.
+- Update answer incrementally.
+
+Time Complexity: O(n)
+
+---
+
+# 9️⃣ Binary Search
+
+## When to Use
+- Sorted arrays
+- Searching boundaries
+- Logarithmic search problems
+
+## Template
+
+```python
+left = 0
+right = len(nums) - 1
+
+while left <= right:
+    mid = (left + right) // 2
+
+    if nums[mid] == target:
+        return mid
+    elif nums[mid] < target:
+        left = mid + 1
+    else:
+        right = mid - 1
+```
+
+Time Complexity: O(log n)
+
+---
+
+# 🔟 Backtracking
+
+## When to Use
+- Permutations
+- Combinations
+- Subsets
+- Search all possible solutions
+
+## Template
+
+```python
+def backtrack(path, choices):
+    if base_condition:
+        result.append(path[:])
+        return
+
+    for choice in choices:
+        path.append(choice)
+        backtrack(path, updated_choices)
+        path.pop()
+```
+
+Time Complexity: Exponential
+
+---
+
+# 1️⃣1️⃣ Monotonic Stack
+
+## When to Use
+- Next greater element
+- Daily temperatures
+- Stock span
+- Range maximum problems
+
+## Template
+
+```python
+stack = []
+
+for i in range(len(nums)):
+    while stack and CONDITION:
+        index = stack.pop()
+        # update result
+
+    stack.append(i)
 ```
 
 Time Complexity: O(n)
 
 ---
 
-# 7️⃣ Greedy Pattern
+# Final Notes
 
-## Used For:
-- Best Time to Buy and Sell Stock (121)
+Mastering patterns is more powerful than memorizing individual problems.
 
-## Template:
+Recognize the structure → Apply the template → Adjust conditions.
 
-```python
-min_price = float('inf')
-max_profit = 0
-
-for price in prices:
-    min_price = min(min_price, price)
-    max_profit = max(max_profit, price - min_price)
-```
-
----
-
-# Summary
-
-These patterns form the foundation of:
-- Array manipulation
-- Hash-based problems
-- Window-based substring problems
-- Partitioning logic
-- Frequency analysis
-
-Mastering patterns is more important than memorizing individual problems.
+Algorithm learning is about pattern abstraction.
