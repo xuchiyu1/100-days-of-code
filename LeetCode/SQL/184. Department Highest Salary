@@ -1,0 +1,293 @@
+# 184. Department Highest Salary  
+# 184. 每个部门工资最高的员工
+
+---
+
+## 📌 Problem Description | 题目描述
+
+**English**
+
+Find employees who have the highest salary in each department.  
+Return Department name, Employee name, and Salary.
+
+**中文**
+
+找出每个部门中工资最高的员工。  
+返回：部门名称、员工姓名、工资。
+
+---
+
+# 🧠 Core Concepts | 核心考点
+
+This problem tests:
+
+- GROUP BY
+- Aggregation function (MAX)
+- Subquery
+- JOIN
+- Multi-column comparison
+- Window Functions (DENSE_RANK)
+
+本题核心考察：
+
+- 分组 GROUP BY
+- 聚合函数 MAX
+- 子查询
+- 表连接 JOIN
+- 多列匹配
+- 窗口函数（进阶）
+
+---
+
+# 🧩 Method 1 — Subquery + GROUP BY  
+# 方法一 — 子查询 + 分组聚合
+
+## SQL
+
+```sql
+SELECT d.name AS Department, e.name AS Employee, e.salary
+FROM Employee e
+JOIN Department d ON e.departmentId = d.id
+WHERE (e.departmentId, e.salary) IN (
+    SELECT departmentId, MAX(salary)
+    FROM Employee
+    GROUP BY departmentId
+);
+```
+
+---
+
+## 🔍 Syntax Breakdown | 语法讲解
+
+### 1️⃣ GROUP BY departmentId
+
+English:
+Groups rows by department.
+
+中文：
+按部门分组，每个部门形成一个分组。
+
+---
+
+### 2️⃣ MAX(salary)
+
+English:
+Returns the maximum salary inside each group.
+
+中文：
+计算每个部门中的最高工资。
+
+---
+
+### 3️⃣ Subquery
+
+```sql
+SELECT departmentId, MAX(salary)
+FROM Employee
+GROUP BY departmentId
+```
+
+English:
+Produces a temporary result like:
+
+| departmentId | max_salary |
+
+中文：
+返回一个临时表：
+每个部门 + 最高工资。
+
+---
+
+### 4️⃣ Multi-column IN
+
+```sql
+WHERE (e.departmentId, e.salary) IN (...)
+```
+
+English:
+Matches (departmentId + salary) as a composite key.
+
+中文：
+使用 “部门ID + 工资” 作为组合条件匹配，
+避免不同部门相同工资导致误匹配。
+
+---
+
+## ⏱ Time Complexity
+
+O(n)
+
+---
+
+# 🧩 Method 2 — Aggregation + JOIN  
+# 方法二 — 聚合后回表 JOIN
+
+## SQL
+
+```sql
+SELECT d.name AS Department, e.name AS Employee, e.salary
+FROM Employee e
+JOIN (
+    SELECT departmentId, MAX(salary) AS max_salary
+    FROM Employee
+    GROUP BY departmentId
+) t
+ON e.departmentId = t.departmentId
+AND e.salary = t.max_salary
+JOIN Department d ON e.departmentId = d.id;
+```
+
+---
+
+## 🔍 Explanation | 讲解
+
+English:
+1. Compute max salary per department.
+2. Join back to Employee table.
+3. Keep rows where salary equals max salary.
+
+中文：
+1. 先算每个部门最高工资。
+2. 再连接回原表。
+3. 过滤工资等于最高工资的员工。
+
+---
+
+## 🔎 Why it works?
+
+Same logic as Method 1.  
+More explicit join condition.  
+Some databases optimize this better.
+
+与方法一逻辑相同，但结构更清晰。
+
+---
+
+# 🧩 Method 3 — Window Function (Recommended)  
+# 方法三 — 窗口函数（推荐）
+
+## SQL
+
+```sql
+SELECT Department, Employee, Salary
+FROM (
+    SELECT d.name AS Department,
+           e.name AS Employee,
+           e.salary AS Salary,
+           DENSE_RANK() OVER (
+               PARTITION BY departmentId
+               ORDER BY salary DESC
+           ) AS rnk
+    FROM Employee e
+    JOIN Department d ON e.departmentId = d.id
+) t
+WHERE rnk = 1;
+```
+
+---
+
+## 🔍 Window Function Explanation | 窗口函数讲解
+
+### 1️⃣ DENSE_RANK()
+
+English:
+Assigns ranking without gaps.
+
+中文：
+排名函数，不跳号。
+
+---
+
+### 2️⃣ OVER()
+
+English:
+Defines the window for ranking.
+
+中文：
+定义窗口范围。
+
+---
+
+### 3️⃣ PARTITION BY departmentId
+
+English:
+Splits data by department.
+
+中文：
+按部门分区（类似分组）。
+
+---
+
+### 4️⃣ ORDER BY salary DESC
+
+English:
+Sorts salaries in descending order.
+
+中文：
+按工资降序排序。
+
+---
+
+## Why Window Function is Better?
+
+English:
+- Cleaner logic
+- Easy to extend (Top 2, Top 3)
+- Frequently asked in interviews
+
+中文：
+- 逻辑更清晰
+- 可扩展（前2名）
+- 面试高频写法
+
+---
+
+# 📈 Comparison of Methods | 方法对比
+
+| Method | Technique | Interview Value |
+|--------|----------|----------------|
+| Method 1 | Subquery | 基础必会 |
+| Method 2 | Aggregation + JOIN | 更清晰 |
+| Method 3 | Window Function | 面试加分 |
+
+---
+
+# 🎯 Follow-up Questions | 面试延伸
+
+### Top 2 per department?
+
+```sql
+WHERE rnk <= 2
+```
+
+---
+
+### Only unique highest (no ties)?
+
+Use:
+
+```sql
+ROW_NUMBER() OVER (...)
+```
+
+---
+
+# 🏁 Final Summary | 总结
+
+This problem is essentially:
+
+Group Aggregation + Filtering original table.
+
+本题本质：
+
+分组统计 + 回表过滤。
+
+Key SQL skills involved:
+
+- GROUP BY
+- MAX()
+- Subquery
+- JOIN
+- Window Functions
+
+掌握这题 = 掌握数据岗 SQL 高频结构。
