@@ -1,0 +1,218 @@
+# LeetCode 496 – Next Greater Element I
+## 单调栈（含逐步演示）
+
+---
+
+## 🧩 Problem Description | 题目描述
+
+给定两个数组 `nums1` 和 `nums2`，其中 `nums1` 是 `nums2` 的子集。
+
+对于 `nums1` 中的每个元素，找到它在 `nums2` 中 **右侧第一个更大的数**。  
+如果不存在，则返回 `-1`。
+
+---
+
+## 🎯 Core Idea | 核心思想
+
+这是典型的 **Next Greater Element** 问题。
+
+关键点：
+
+- 我们要找的是 **右侧第一个更大**
+- 使用 **单调递减栈**
+- 从 **右往左遍历**
+- 每个元素最多进栈出栈一次 → O(n)
+
+---
+
+## 🧠 单调栈逻辑解释
+
+意图：
+
+对于 `nums2[i]`，栈中保存的是：
+
+> i 右侧“候选的更大元素”的索引
+
+当我们处理 `i` 时：
+
+```python
+while stack and nums2[i] >= nums2[stack[-1]]:
+    stack.pop()
+```
+
+含义：
+
+- 如果当前元素 ≥ 栈顶元素
+- 栈顶元素不可能成为“第一个更大”
+- 直接弹出
+
+如果栈不为空：
+
+```python
+next_greater[i] = nums2[stack[-1]]
+```
+
+栈顶就是右侧第一个更大的元素。
+
+---
+
+# 🔎 逐步示例（重点复习部分）
+
+示例：
+
+```python
+nums2 = [1, 3, 4, 2]
+```
+
+目标：求每个位置的 next greater
+
+---
+
+### 初始状态
+
+```
+stack = []
+next_greater = [0,0,0,0]
+```
+
+---
+
+### i = 3 （nums2[3] = 2）
+
+- stack 为空
+- next_greater[3] = -1
+- stack = [3]
+
+---
+
+### i = 2 （nums2[2] = 4）
+
+- nums2[2] >= nums2[3]? → 4 >= 2 → pop 3
+- stack 为空
+- next_greater[2] = -1
+- stack = [2]
+
+---
+
+### i = 1 （nums2[1] = 3）
+
+- 3 >= nums2[2]? → 3 >= 4 ❌ 不成立
+- stack 不空
+- next_greater[1] = nums2[2] = 4
+- stack = [2,1]
+
+---
+
+### i = 0 （nums2[0] = 1）
+
+- 1 >= nums2[1]? → 1 >= 3 ❌ 不成立
+- stack 不空
+- next_greater[0] = nums2[1] = 3
+- stack = [2,1,0]
+
+---
+
+### ✅ 最终结果
+
+```
+next_greater = [3, 4, -1, -1]
+```
+
+含义：
+
+- 1 的下一个更大是 3
+- 3 的下一个更大是 4
+- 4 后面没有更大 → -1
+- 2 后面没有更大 → -1
+
+---
+
+## 💻 完整代码
+
+```python
+class Solution:
+    def nextGreaterElement(self, nums1, nums2):
+
+        result = [0] * len(nums1)
+
+        # Step 1: Precompute next greater for nums2
+        next_greater = [0] * len(nums2)
+        stack = []
+
+        for i in range(len(nums2) - 1, -1, -1):
+
+            while stack and nums2[i] >= nums2[stack[-1]]:
+                stack.pop()
+
+            if not stack:
+                next_greater[i] = -1
+            else:
+                next_greater[i] = nums2[stack[-1]]
+
+            stack.append(i)
+
+        # Step 2: Map value -> next greater
+        value_to_next = {}
+        for i in range(len(nums2)):
+            value_to_next[nums2[i]] = next_greater[i]
+
+        # Step 3: Build result
+        for i in range(len(nums1)):
+            result[i] = value_to_next[nums1[i]]
+
+        return result
+```
+
+---
+
+## ⏱ Complexity
+
+Time Complexity:
+
+```
+O(n + m)
+```
+
+Space Complexity:
+
+```
+O(n)
+```
+
+---
+
+## 🧠 关键总结
+
+```
+右侧第一个更大
+= 反向遍历 + 单调递减栈
+```
+
+记住：
+
+- 从右往左
+- 弹出所有 <= 当前值的元素
+- 栈顶就是答案
+- 每个元素最多进栈出栈一次
+
+---
+
+## 🎯 面试回答结构
+
+如果面试官问：
+
+1. 为什么反向遍历？
+2. 为什么用 >=？
+3. 为什么是 O(n)？
+4. 单调栈本质是什么？
+
+你可以按：
+
+- 未来已知
+- 淘汰无效候选
+- 每个元素最多两次操作
+- 用栈维护候选集合
+
+这样结构回答。
+
+---
